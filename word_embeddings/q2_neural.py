@@ -22,6 +22,7 @@ def forward_backward_prop(data, labels, params, dimensions):
     dimensions -- A tuple of input dimension, number of hidden units
                   and output dimension
     """
+    M = data.shape[0]
 
     ### Unpack network parameters (do not modify)
     ofs = 0
@@ -36,17 +37,30 @@ def forward_backward_prop(data, labels, params, dimensions):
     b2 = np.reshape(params[ofs:ofs + Dy], (1, Dy))
 
     ### YOUR CODE HERE: forward propagation
-    raise NotImplementedError
-    ### END YOUR CODE
+    h = sigmoid(np.dot(data, W1) + b1)
+    yhat = softmax(np.dot(h, W2) + b2)
+    cost = np.sum(-np.log(yhat)*labels, axis=1)
+
 
     ### YOUR CODE HERE: backward propagation
-    raise NotImplementedError
+    grad_softmax_input = yhat - labels
+    gradW2 = np.dot(h.T, grad_softmax_input)
+    gradb2 = np.sum(grad_softmax_input, axis=0)
+    gradh = np.dot(grad_softmax_input, W2.T)
+    ## Ideally jacobian but for sigmoid dimensions are indepedent
+    grad_sigmoid_input = gradh*sigmoid_grad(h)
+    gradW1 = np.dot(data.T, grad_sigmoid_input)
+    gradb1 = np.sum(grad_sigmoid_input, axis=0)
     ### END YOUR CODE
 
     ### Stack gradients (do not modify)
+    cost = np.sum(cost)/M
     grad = np.concatenate((gradW1.flatten(), gradb1.flatten(),
         gradW2.flatten(), gradb2.flatten()))
+    grad /= M
 
+    # print gradW1.shape, gradW2.shape, gradb1.shape, gradb2.shape
+    # print cost.shape, grad.shape
     return cost, grad
 
 
@@ -67,6 +81,7 @@ def sanity_check():
     params = np.random.randn((dimensions[0] + 1) * dimensions[1] + (
         dimensions[1] + 1) * dimensions[2], )
 
+    print 'Before grad check'
     gradcheck_naive(lambda params:
         forward_backward_prop(data, labels, params, dimensions), params)
 
