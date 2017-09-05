@@ -1,1 +1,5 @@
 *.env
+*.npy
+*.pyc
+utils/datasets/
+../.DS_Store

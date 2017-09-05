@@ -260,17 +260,17 @@ def test_word2vec():
         cbow, dummy_tokens, vec, dataset, 5, negSamplingCostAndGradient),
         dummy_vectors)
 
-    # print "\n=== Results ==="
-    # print skipgram("c", 3, ["a", "b", "e", "d", "b", "c"],
-    #     dummy_tokens, dummy_vectors[:5,:], dummy_vectors[5:,:], dataset)
-    # print skipgram("c", 1, ["a", "b"],
-    #     dummy_tokens, dummy_vectors[:5,:], dummy_vectors[5:,:], dataset,
-    #     negSamplingCostAndGradient)
-    # print cbow("a", 2, ["a", "b", "c", "a"],
-    #     dummy_tokens, dummy_vectors[:5,:], dummy_vectors[5:,:], dataset)
-    # print cbow("a", 2, ["a", "b", "a", "c"],
-    #     dummy_tokens, dummy_vectors[:5,:], dummy_vectors[5:,:], dataset,
-    #     negSamplingCostAndGradient)
+    print "\n=== Results ==="
+    print skipgram("c", 3, ["a", "b", "e", "d", "b", "c"],
+        dummy_tokens, dummy_vectors[:5,:], dummy_vectors[5:,:], dataset)
+    print skipgram("c", 1, ["a", "b"],
+        dummy_tokens, dummy_vectors[:5,:], dummy_vectors[5:,:], dataset,
+        negSamplingCostAndGradient)
+    print cbow("a", 2, ["a", "b", "c", "a"],
+        dummy_tokens, dummy_vectors[:5,:], dummy_vectors[5:,:], dataset)
+    print cbow("a", 2, ["a", "b", "a", "c"],
+        dummy_tokens, dummy_vectors[:5,:], dummy_vectors[5:,:], dataset,
+        negSamplingCostAndGradient)
 
 
 if __name__ == "__main__":
