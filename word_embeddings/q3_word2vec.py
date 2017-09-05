@@ -107,24 +107,15 @@ def negSamplingCostAndGradient(predicted, target, outputVectors, dataset,
     # wish to match the autograder and receive points!
     indices = [target]
     indices.extend(getNegativeSamples(target, dataset, K))
-
-    gradPred = np.zeros(predicted.shape)
     grad = np.zeros(outputVectors.shape)
-    cost = 0.0
 
     ### YOUR CODE HERE
-    sigmoids = np.array(len(indices))
-    for i in xrange(len(indices)):
-        if indices[i] == target:
-            sigmoid_val = sigmoid(np.dot(outputVectors[indices[i]], predicted))
-            gradPred += outputVectors[target]*(sigmoid_val - 1)
-            grad[target] = predicted*(sigmoid_val - 1)
-            cost -= np.log(sigmoid_val)
-        else:
-            sigmoid_val = sigmoid(-np.dot(outputVectors[indices[i]], predicted))
-            gradPred -= outputVectors[indices[i]]*(sigmoid_val - 1)
-            grad[target] = -predicted*(sigmoid_val - 1)
-            cost -= np.log(sigmoid_val)
+    sign = -np.ones(len(indices))
+    sign[0] = 1
+    sigmoids = sigmoid(sign * np.dot(outputVectors[indices], predicted).flatten())
+    cost = np.sum(-np.log(sigmoids))
+    gradPred = np.sum(outputVectors[indices]*(sigmoids-1)[:,None]*sign[:,None], axis=0)
+    grad[indices] = np.outer(sigmoids - 1, predicted)*sign[:, None]
 
     ### END YOUR CODE
 
@@ -194,10 +185,15 @@ def cbow(currentWord, C, contextWords, tokens, inputVectors, outputVectors,
     gradIn = np.zeros(inputVectors.shape)
     gradOut = np.zeros(outputVectors.shape)
 
-    ### YOUR CODE HERE
-    raise NotImplementedError
-    ### END YOUR CODE
+    indices = [tokens[contextWord] for contextWord in contextWords]
 
+    ### YOUR CODE HERE
+    cost, gradPred, gradOut = word2vecCostAndGradient(
+                                np.sum(inputVectors[indices], axis=0),
+                                tokens[currentWord],
+                                outputVectors,
+                                dataset)
+    gradIn[indices] = gradPred[None,:]
     return cost, gradIn, gradOut
 
 
@@ -256,13 +252,13 @@ def test_word2vec():
     gradcheck_naive(lambda vec: word2vec_sgd_wrapper(
         skipgram, dummy_tokens, vec, dataset, 5, negSamplingCostAndGradient),
         dummy_vectors)
-    # print "\n==== Gradient check for CBOW      ===="
-    # gradcheck_naive(lambda vec: word2vec_sgd_wrapper(
-    #     cbow, dummy_tokens, vec, dataset, 5, softmaxCostAndGradient),
-    #     dummy_vectors)
-    # gradcheck_naive(lambda vec: word2vec_sgd_wrapper(
-    #     cbow, dummy_tokens, vec, dataset, 5, negSamplingCostAndGradient),
-    #     dummy_vectors)
+    print "\n==== Gradient check for CBOW      ===="
+    gradcheck_naive(lambda vec: word2vec_sgd_wrapper(
+        cbow, dummy_tokens, vec, dataset, 5, softmaxCostAndGradient),
+        dummy_vectors)
+    gradcheck_naive(lambda vec: word2vec_sgd_wrapper(
+        cbow, dummy_tokens, vec, dataset, 5, negSamplingCostAndGradient),
+        dummy_vectors)
 
     # print "\n=== Results ==="
     # print skipgram("c", 3, ["a", "b", "e", "d", "b", "c"],
