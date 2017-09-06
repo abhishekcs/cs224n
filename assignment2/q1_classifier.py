@@ -19,7 +19,7 @@ class Config(object):
     n_samples = 1024
     n_features = 100
     n_classes = 5
-    batch_size = 64
+    batch_size = 2
     n_epochs = 50
     lr = 1e-4
 
@@ -44,8 +44,9 @@ class SoftmaxModel(Model):
             self.input_placeholder
             self.labels_placeholder
         """
-        ### YOUR CODE HERE
-        ### END YOUR CODE
+        self.input_placeholder = tf.placeholder(tf.float32, (self.config.batch_size, self.config.n_features))
+        self.labels_placeholder = tf.placeholder(tf.int32, (self.config.batch_size, self.config.n_classes))
+
 
     def create_feed_dict(self, inputs_batch, labels_batch=None):
         """Creates the feed_dict for training the given step.
@@ -67,8 +68,7 @@ class SoftmaxModel(Model):
         Returns:
             feed_dict: The feed dictionary mapping from placeholders to values.
         """
-        ### YOUR CODE HERE
-        ### END YOUR CODE
+        feed_dict ={self.input_placeholder: inputs_batch, self.labels_placeholder:labels_batch}
         return feed_dict
 
     def add_prediction_op(self):
@@ -87,9 +87,11 @@ class SoftmaxModel(Model):
         Returns:
             pred: A tensor of shape (batch_size, n_classes)
         """
-        ### YOUR CODE HERE
-        ### END YOUR CODE
-        return pred
+        
+        W = tf.Variable(tf.zeros((self.config.n_features, self.config.n_classes)))
+        b = tf.Variable(tf.zeros((Config.n_classes)))
+
+        return softmax(tf.matmul(self.input_placeholder, W)+b)
 
     def add_loss_op(self, pred):
         """Adds cross_entropy_loss ops to the computational graph.
@@ -103,7 +105,7 @@ class SoftmaxModel(Model):
         """
         ### YOUR CODE HERE
         ### END YOUR CODE
-        return loss
+        return cross_entropy_loss(self.labels_placeholder, pred)
 
     def add_training_op(self, loss):
         """Sets up the training Ops.
@@ -126,7 +128,7 @@ class SoftmaxModel(Model):
         """
         ### YOUR CODE HERE
         ### END YOUR CODE
-        return train_op
+        return tf.train.GradientDescentOptimizer(self.config.lr).minimize(loss)
 
     def run_epoch(self, sess, inputs, labels):
         """Runs an epoch of training.
