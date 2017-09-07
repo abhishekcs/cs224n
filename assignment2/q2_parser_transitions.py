@@ -1,3 +1,4 @@
+import copy
 class PartialParse(object):
     def __init__(self, sentence):
         """Initializes this partial parse.
@@ -76,10 +77,26 @@ def minibatch_parse(sentences, model, batch_size):
                       contain the parse for sentences[i]).
     """
 
-    ### YOUR CODE HERE
-    ### END YOUR CODE
+    partial_parses = []
+    for sentence in sentences:
+        partial_parses.append(PartialParse(sentence))
 
-    return dependencies
+    unfinished_parses = copy.copy(partial_parses)
+    while unfinished_parses:
+        partial_parse_batch = unfinished_parses[:batch_size]
+        predictions = model.predict(partial_parse_batch)
+        effective_batch_size = min(batch_size, len(unfinished_parses))
+        for i in xrange(effective_batch_size):
+            unfinished_parses[i].parse_step(predictions[i])
+        i = 0
+        while i < effective_batch_size:
+            if len(unfinished_parses[i].buffer) == 0 and len(unfinished_parses[i].stack) == 1:
+                unfinished_parses.pop(i)
+                effective_batch_size -= 1
+            else:
+                i += 1
+
+    return [partial_parse.dependencies for partial_parse in partial_parses]
 
 
 def test_step(name, transition, stack, buf, deps,
@@ -164,5 +181,5 @@ def test_minibatch_parse():
 
 if __name__ == '__main__':
     test_parse_step()
-    # test_parse()
-    # test_minibatch_parse()
+    test_parse()
+    test_minibatch_parse()
