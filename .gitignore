@@ -1,3 +1,4 @@
 neural-dependency-parser/data/*
 *.pyc
 ner/data/*
+ner/results/*
